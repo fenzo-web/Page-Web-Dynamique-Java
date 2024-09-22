@@ -1,71 +1,59 @@
 /**************   Variable   ***************/
 
-let works = [];
-//console.log("🚀 ~ works:", works);
-let sectionPortfolio = document.getElementById("portfolio");
-let gallery = document.querySelector(".gallery");
-let filters = document.querySelector(".filters");
+const gallery = document.querySelector(".gallery");
+const filters = document.querySelector(".filters");
 
 /****************  Fetch Works ****************/
-const getWorks = async () => {
-  try {
-    const response = await fetch("http://localhost:5678/api/works");
-    //console.log("🚀 ~ getWorks ~ response:", response);
-    if (response.ok) {
-      const result = await response.json();
-      //console.log("🚀 ~ getWorks ~ result:", result);
-      works = result;
-      return result;
-    } else {
-      throw new Error("Error of fetch execution");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-getWorks().then((data) => {
-  data.forEach((work) => {
-    displayWork(work);
-  });
-});
-/***********  Display Work  **************/
+async function getWorks() {
+  const response = await fetch("http://localhost:5678/api/works");
+  return await response.json();
+}
+getWorks();
 
-const displayWork = (oneWork) => {
-  //console.log("🚀 ~ displayWork ~ oneWork:", oneWork);
-  let figure = document.createElement("figure");
-  let img = document.createElement("img");
+/*********** Display Works  ************/
+async function displayWorks() {
+  const works = await getWorks();
+  works.forEach((oneWork) => {
+    createWorks(oneWork);
+  });
+}
+displayWorks();
+
+function createWorks(oneWork) {
+  const figure = document.createElement("figure");
+  const img = document.createElement("img");
   img.src = oneWork.imageUrl;
-  let figcaption = document.createElement("figcaption");
-  figcaption.innerText = oneWork.title;
+  const figcaption = document.createElement("figcaption");
+  figcaption.textContent = oneWork.title;
   figure.appendChild(img);
   figure.appendChild(figcaption);
   gallery.appendChild(figure);
-};
+}
 
 /*******    Display Button Categories     ********/
 
 /******* Fetch Categories *********/
 
-async function getCategories() {
+async function getCategorys() {
   const response = await fetch("http://localhost:5678/api/categories");
   return await response.json();
 }
 
-async function displayCategoriesButtons() {
-  const categories = await getCategories();
-  //console.log(categories);
-  categories.forEach((oneCategorie) => {
+async function displayCategorysButtons() {
+  const categorys = await getCategorys();
+  //console.log(categorys);
+  categorys.forEach((oneCategory) => {
     const btn = document.createElement("button");
-    btn.textContent = oneCategorie.name;
-    btn.id = oneCategorie.id;
+    btn.textContent = oneCategory.name;
+    btn.id = oneCategory.id;
     filters.appendChild(btn);
   });
 }
-displayCategoriesButtons();
+displayCategorysButtons();
 
 /******* Filtrages des buttons par categories ********/
 
-async function filterCategorie() {
+async function filterCategory() {
   const allWorks = await getWorks();
   //console.log(allWorks);
   const buttons = document.querySelectorAll(".filters button");
@@ -75,17 +63,18 @@ async function filterCategorie() {
       btnId = e.target.id; /**Recuper l'ID au click **/
       gallery.innerHTML = ""; /** Supprime les photos au click **/
       if (btnId !== "0") {
-        const allWorksTriCategorie = allWorks.filter((oneWork) => {
+        const allWorksTriCategory = allWorks.filter((oneWork) => {
           /**Trouver meilleur nom pour "all works / allWorksTri" ect */
           return oneWork.categoryId == btnId;
         });
-        allWorksTriCategorie.forEach((oneWork) => {
-          displayWork(oneWork);
+        allWorksTriCategory.forEach((oneWork) => {
+          createWorks(oneWork);
         });
       } else {
+        displayWorks();
       }
       console.log(btnId);
     });
   });
 }
-filterCategorie();
+filterCategory();
