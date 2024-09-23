@@ -2,24 +2,26 @@
 
 const gallery = document.querySelector(".gallery");
 const filters = document.querySelector(".filters");
+let allWorks = [];
+let categories = [];
 
 /****************  Fetch Works ****************/
 async function getWorks() {
   const response = await fetch("http://localhost:5678/api/works");
-  return await response.json();
+  allWorks = await response.json();
 }
-getWorks();
+//getWorks();
 
 /*********** Display Works  ************/
 async function displayWorks() {
-  const works = await getWorks();
-  works.forEach((oneWork) => {
-    createWorks(oneWork);
+  await getWorks();
+  allWorks.forEach((oneWork) => {
+    createWork(oneWork);
   });
 }
 displayWorks();
 
-function createWorks(oneWork) {
+function createWork(oneWork) {
   const figure = document.createElement("figure");
   const img = document.createElement("img");
   img.src = oneWork.imageUrl;
@@ -34,47 +36,54 @@ function createWorks(oneWork) {
 
 /******* Fetch Categories *********/
 
-async function getCategorys() {
+async function getCategories() {
   const response = await fetch("http://localhost:5678/api/categories");
-  return await response.json();
+  categories = await response.json();
+  categories.unshift({
+    /** unshift est un push en debut du tableau **/ id: 0,
+    name: "Tous",
+  });
 }
 
-async function displayCategorysButtons() {
-  const categorys = await getCategorys();
-  //console.log(categorys);
-  categorys.forEach((oneCategory) => {
+async function displayCategoriesButtons() {
+  await getCategories();
+  //console.log(categories);
+  categories.forEach((oneCategory) => {
     const btn = document.createElement("button");
     btn.textContent = oneCategory.name;
     btn.id = oneCategory.id;
     filters.appendChild(btn);
   });
 }
-displayCategorysButtons();
 
 /******* Filtrages des buttons par categories ********/
 
 async function filterCategory() {
-  const allWorks = await getWorks();
+  //const allWorks = await getWorks();
   //console.log(allWorks);
   const buttons = document.querySelectorAll(".filters button");
-  //console.log(buttons);
+  console.log(buttons);
   buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
-      btnId = e.target.id; /**Recuper l'ID au click **/
+      const btnId = Number(e.target.id); /**Recuper l'ID au click **/
+      console.log("🚀 ~ button.addEventListener ~ btnId:", btnId);
       gallery.innerHTML = ""; /** Supprime les photos au click **/
-      if (btnId !== "0") {
-        const allWorksTriCategory = allWorks.filter((oneWork) => {
-          /**Trouver meilleur nom pour "all works / allWorksTri" ect */
-          return oneWork.categoryId == btnId;
-        });
-        allWorksTriCategory.forEach((oneWork) => {
-          createWorks(oneWork);
+      if (btnId !== 0) {
+        const filteredWorks = allWorks.filter(
+          (oneWork) => oneWork.categoryId === btnId
+        );
+        filteredWorks.forEach((oneWork) => {
+          createWork(oneWork);
         });
       } else {
-        displayWorks();
+        allWorks.forEach((oneWork) => {
+          createWork(oneWork);
+        });
       }
       console.log(btnId);
     });
   });
 }
-filterCategory();
+displayCategoriesButtons().then(() => {
+  filterCategory();
+});
