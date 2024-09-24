@@ -5,23 +5,32 @@ const filters = document.querySelector(".filters");
 let allWorks = [];
 let categories = [];
 
-/****************  Fetch Works ****************/
-async function getWorks() {
-  const response = await fetch("http://localhost:5678/api/works");
-  allWorks = await response.json();
-}
-//getWorks();
+/****************  Fetch Works  ****************/
 
+const getWorks = async () => {
+  try {
+    const response = await fetch("http://localhost:5678/api/works");
+    if (response.ok) {
+      const result = await response.json();
+      allWorks = result;
+      return result;
+    } else {
+      throw new Error("Error of fetch execution");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 /*********** Display Works  ************/
-async function displayWorks() {
+const displayWorks = async () => {
   await getWorks();
   allWorks.forEach((oneWork) => {
     createWork(oneWork);
   });
-}
+};
 displayWorks();
 
-function createWork(oneWork) {
+const createWork = (oneWork) => {
   const figure = document.createElement("figure");
   const img = document.createElement("img");
   img.src = oneWork.imageUrl;
@@ -30,22 +39,22 @@ function createWork(oneWork) {
   figure.appendChild(img);
   figure.appendChild(figcaption);
   gallery.appendChild(figure);
-}
+};
 
 /*******    Display Button Categories     ********/
 
 /******* Fetch Categories *********/
 
-async function getCategories() {
+const getCategories = async () => {
   const response = await fetch("http://localhost:5678/api/categories");
   categories = await response.json();
   categories.unshift({
     /** unshift est un push en debut du tableau **/ id: 0,
     name: "Tous",
   });
-}
+};
 
-async function displayCategoriesButtons() {
+const displayCategoriesButtons = async () => {
   await getCategories();
   //console.log(categories);
   categories.forEach((oneCategory) => {
@@ -54,11 +63,11 @@ async function displayCategoriesButtons() {
     btn.id = oneCategory.id;
     filters.appendChild(btn);
   });
-}
+};
 
 /******* Filtrages des buttons par categories ********/
 
-async function filterCategory() {
+const filterCategory = async () => {
   //const allWorks = await getWorks();
   //console.log(allWorks);
   const buttons = document.querySelectorAll(".filters button");
@@ -83,7 +92,7 @@ async function filterCategory() {
       console.log(btnId);
     });
   });
-}
+};
 displayCategoriesButtons().then(() => {
   filterCategory();
 });
