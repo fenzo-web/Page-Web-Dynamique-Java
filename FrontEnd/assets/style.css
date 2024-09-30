@@ -343,6 +343,7 @@ nav a {
   align-content: center;
   gap: 10px;
   font-size: 14px;
+  cursor: pointer;
 }
 .mode-edition {
   display: flex;
@@ -353,4 +354,40 @@ nav a {
   align-content: center;
   gap: 10px;
   font-size: 14px;
+}
+
+/******** Style Modal **********/
+.modal {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0000004d;
+}
+
+.modal-wrapper {
+  background-color: white;
+  width: 40%;
+  height: 40%;
+  padding: 20px;
+  overflow: auto;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+}
+.modal-wrapper h2 {
+  color: black;
+}
+.fa-xmark {
+  position: absolute;
+  top: 26px;
+  right: 30px;
+  cursor: pointer;
 }

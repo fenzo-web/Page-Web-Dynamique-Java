@@ -1,4 +1,4 @@
-/**************   Variable   ***************/
+/************************   Variable   ****************************/
 
 const gallery = document.querySelector(".gallery");
 const filters = document.querySelector(".filters");
@@ -7,7 +7,7 @@ let categories = [];
 let mesProjets = document.querySelector(".mes-projets");
 const header = document.querySelector("header");
 
-/****************  Fetch Works  ****************/
+/****************************  Fetch Works  **************************/
 
 async function getWorks() {
   try {
@@ -23,7 +23,7 @@ async function getWorks() {
     console.log(error);
   }
 }
-/*********** Display Works  ************/
+/****************************** Display Works  *****************************/
 const displayWorks = async () => {
   await getWorks();
   allWorks.forEach((oneWork) => {
@@ -43,9 +43,9 @@ const createWork = (oneWork) => {
   gallery.appendChild(figure);
 };
 
-/*******    Display Button Categories     ********/
+/************************    Display Button Categories     ************************/
 
-/******* Fetch Categories *********/
+/************************* Fetch Categories ************************/
 
 const getCategories = async () => {
   try {
@@ -83,7 +83,7 @@ const displayCategoriesButtons = async () => {
   });
 };
 
-/******* Filtrages des buttons par categories ********/
+/************************* Filtrages des buttons par categories *********************/
 
 const filterCategory = async () => {
   //const allWorks = await getWorks();
@@ -115,7 +115,7 @@ displayCategoriesButtons().then(() => {
   filterCategory();
 });
 
-/***** Si utilisateur connecter *********/
+/*********************** Si utilisateur connecter *****************/
 let htmlModifier = `
 <i class="fa-regular fa-pen-to-square"></i>
 <p>modifier</p>
@@ -144,3 +144,21 @@ if (loged == "true") {
   header.appendChild(modeEdition);
   // Attetion le mode edition n'est pas a la bonne place
 }
+
+/***************** Modal **********************/
+const modifier = document.querySelector(".admin-modifier");
+const modal = document.querySelector(".modal");
+const xmark = document.querySelector(".modal .fa-xmark");
+
+modifier.addEventListener("click", () => {
+  modal.style.display = "flex";
+});
+
+xmark.addEventListener("click", () => {
+  modal.style.display = "none";
+});
+modal.addEventListener("click", (e) => {
+  if (e.target.className == "modal") {
+    modal.style.display = "none";
+  }
+});

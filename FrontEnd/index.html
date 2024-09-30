@@ -59,7 +59,20 @@
       <section id="portfolio">
         <h2 class="mes-projets">Mes Projets</h2>
         <div class="filters"></div>
-
+        <aside
+          id="modal1"
+          class="modal"
+          aria-hidden="true"
+          aria-labelledby="title-modal"
+          style="display: none"
+        >
+          <div class="modal-wrapper">
+            <span><i class="fa-solid fa-xmark"></i></span>
+            <h2 id="title-modal">Galerie photo</h2>
+            <div class="galerie-modal"></div>
+            <input type="submit" value="Ajouter une photo" />
+          </div>
+        </aside>
         <div class="gallery"></div>
       </section>
       <section id="contact">
@@ -84,6 +97,7 @@
         </ul>
       </nav>
     </footer>
+
     <script src="./script.js"></script>
   </body>
 </html>
