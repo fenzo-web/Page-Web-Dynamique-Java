@@ -6,9 +6,9 @@ let htmlLoginForm = `
     <h2>Log in</h2>
     <form action="submit" method="post">
         <label for="email">E-mail</label>
-        <input type="password" id="email" name="email" required/>
+        <input type="email" id="email" name="email" value="sophie.bluel@test.tld" required/>
         <label for="password">Mot de passe</label>
-        <input type="password" id="password" name="password" required/>
+        <input type="password" id="password" name="password" value="S0phie" required/>
         <input type="submit" value="Se connecter" />
         <p class="underline">Mot de passe oublié</p>
     </form>
@@ -54,6 +54,7 @@ const postUsers = async () => {
         console.log("🚀 ~ Reponse de l'API:", dataUser);
         // je peux normalement faire quelque chose avec la reponse ici
         window.sessionStorage.loged = true;
+        sessionStorage.setItem("token", dataUser.token);
         window.location.href = "../index.html";
       })
       .catch((error) => {

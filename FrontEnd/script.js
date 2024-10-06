@@ -6,6 +6,13 @@ let allWorks = [];
 let categories = [];
 let mesProjets = document.querySelector(".mes-projets");
 const header = document.querySelector("header");
+const logout = document.querySelector("header nav .logout");
+const isConnect = () => {
+  const token = sessionStorage.getItem("token");
+  console.log("🚀 ~ isConnect ~ token:", !!token);
+  return !!token;
+};
+const loged = isConnect();
 
 /****************************  Fetch Works  **************************/
 
@@ -111,9 +118,12 @@ const filterCategory = async () => {
     });
   });
 };
-displayCategoriesButtons().then(() => {
-  filterCategory();
-});
+if (!loged) {
+  displayCategoriesButtons().then(() => {
+    filterCategory();
+  });
+}
+// fonction a appeler quand je me deconnect pour faire apparaitre les categories
 
 /*********************** Si utilisateur connecter *****************/
 let htmlModifier = `
@@ -125,30 +135,38 @@ let htmlModeEdition = `
 <p>Mode édition</p>
 `;
 
-const loged = window.sessionStorage.loged;
-const logout = document.querySelector("header nav .logout");
-
-if (loged == "true") {
+if (loged) {
   logout.textContent = "logout";
+  logout.removeAttribute("href");
   logout.addEventListener("click", () => {
-    window.sessionStorage.loged = false;
+    sessionStorage.removeItem("token");
+    modeEdition.classList.add("display-none");
+    modifier.classList.add("display-none");
+    header.classList.remove("no-marge");
+    // Changer le button logout en login
+    displayCategoriesButtons().then(() => {
+      filterCategory();
+    });
+    // action de deconnection
   });
   const modifier = document.createElement("div");
   modifier.innerHTML = htmlModifier;
   modifier.classList.add("admin-modifier");
-  mesProjets.appendChild(modifier);
-  // Attention le modifier n'est pas a la bonne place c'est juste pour regler les bases
+  filters.appendChild(modifier);
+  // Attention le modifier n'est pas a la bonne place
   const modeEdition = document.createElement("div");
   modeEdition.innerHTML = htmlModeEdition;
   modeEdition.classList.add("mode-edition");
-  header.appendChild(modeEdition);
-  // Attetion le mode edition n'est pas a la bonne place
+  header.prepend(modeEdition);
+  header.classList.add("no-marge");
+  // Attention le mode edition n'est pas a la bonne place
 }
 
 /***************** Modal **********************/
 const modifier = document.querySelector(".admin-modifier");
 const modal = document.querySelector(".modal");
 const xmark = document.querySelector(".modal .fa-xmark");
+const galeryModal = document.querySelector(".galery-modal");
 
 modifier.addEventListener("click", () => {
   modal.style.display = "flex";
@@ -162,3 +180,56 @@ modal.addEventListener("click", (e) => {
     modal.style.display = "none";
   }
 });
+window.addEventListener("keydown", function (e) {
+  // close modal sur button Echap
+  if (e.key === "Escape" || e.key === "Esc") {
+    modal.style.display = "none";
+  }
+});
+// Affichage des Works dans la Modal
+const displayWorksModal = async () => {
+  galeryModal.innerHTML = "";
+  const galeryPhoto = await getWorks();
+  galeryPhoto.forEach((work) => {
+    const figure = document.createElement("figure");
+    const img = document.createElement("img");
+    const span = document.createElement("span");
+    const trash = document.createElement("i");
+    trash.classList.add("fa-solid", "fa-trash-can");
+    trash.id = work.id;
+    img.src = work.imageUrl;
+    span.appendChild(trash);
+    figure.appendChild(span);
+    figure.appendChild(img);
+    galeryModal.appendChild(figure);
+  });
+  //deleteWorkModal(); En attente de reussite du delete
+};
+displayWorksModal();
+
+// Suppression d'une image dans la modal
+/**** const deleteWorkModal = () => {
+  const trashAll = document.querySelectorAll(".fa-trash-can");
+  trashAll.forEach((trash) => {
+    trash.addEventListener("click", (e) => {
+      const id = trash.id;
+      const init = {
+        method: "DELETE",
+        headers: { "content-Type": "application/json" },
+      };
+      fetch("http://localhost:5678/api/works/{id}")
+        .then((response) => {
+          if (!response.ok) {
+            console.log("Erreur lors du delete ! ");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Delete Reussi !", data);
+          displayWorksModal;
+          displayWorks;
+        });
+    });
+  });
+}; ***********/
+// Erreur lors du delete
