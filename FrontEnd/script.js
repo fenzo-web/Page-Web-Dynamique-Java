@@ -1,5 +1,5 @@
 /************************   Variable   ****************************/
-
+const token = sessionStorage.getItem("token");
 const gallery = document.querySelector(".gallery");
 const filters = document.querySelector(".filters");
 let allWorks = [];
@@ -143,7 +143,11 @@ if (loged) {
     modeEdition.classList.add("display-none");
     modifier.classList.add("display-none");
     header.classList.remove("no-marge");
-    // Changer le button logout en login
+    logout.innerHTML = `
+    <li>
+            <a href="log/login.html" class="logout">login</a>
+          </li>
+    `;
     displayCategoriesButtons().then(() => {
       filterCategory();
     });
@@ -159,7 +163,7 @@ if (loged) {
   modeEdition.classList.add("mode-edition");
   header.prepend(modeEdition);
   header.classList.add("no-marge");
-  // Attention le mode edition n'est pas a la bonne place
+  // Mode Edition
 }
 
 /***************** Modal **********************/
@@ -169,6 +173,7 @@ const xmark = document.querySelector(".modal .fa-xmark");
 const galeryModal = document.querySelector(".galery-modal");
 
 modifier.addEventListener("click", () => {
+  displayWorksModal();
   modal.style.display = "flex";
 });
 
@@ -189,47 +194,91 @@ window.addEventListener("keydown", function (e) {
 // Affichage des Works dans la Modal
 const displayWorksModal = async () => {
   galeryModal.innerHTML = "";
-  const galeryPhoto = await getWorks();
-  galeryPhoto.forEach((work) => {
+  allWorks.forEach((work) => {
     const figure = document.createElement("figure");
     const img = document.createElement("img");
     const span = document.createElement("span");
     const trash = document.createElement("i");
     trash.classList.add("fa-solid", "fa-trash-can");
     trash.id = work.id;
+    trash.dataset.toto = work.id;
     img.src = work.imageUrl;
+    trash.addEventListener("click", () => {
+      deleteWorkModal(work.id);
+      figure.style.display = "none";
+    });
     span.appendChild(trash);
     figure.appendChild(span);
     figure.appendChild(img);
     galeryModal.appendChild(figure);
   });
-  //deleteWorkModal(); En attente de reussite du delete
 };
-displayWorksModal();
 
 // Suppression d'une image dans la modal
-/**** const deleteWorkModal = () => {
-  const trashAll = document.querySelectorAll(".fa-trash-can");
-  trashAll.forEach((trash) => {
-    trash.addEventListener("click", (e) => {
-      const id = trash.id;
-      const init = {
-        method: "DELETE",
-        headers: { "content-Type": "application/json" },
-      };
-      fetch("http://localhost:5678/api/works/{id}")
-        .then((response) => {
-          if (!response.ok) {
-            console.log("Erreur lors du delete ! ");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Delete Reussi !", data);
-          displayWorksModal;
-          displayWorks;
-        });
+
+const deleteWorkModal = (id) => {
+  fetch(`http://localhost:5678/api/works/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        console.log("Problem");
+        return;
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Sucess", data);
+    })
+    .catch((error) => {
+      console.log(error);
     });
+};
+
+/************** Faire le switch des modales ***************/
+const btnAddModal = document.querySelector(".modal-wrapper .button");
+const modalAddWork = document.querySelector(".modal-add-work");
+const modalWrapper = document.querySelector(".modal-wrapper");
+const arrowLeft = document.querySelector(".fa-arrow-left");
+const markAdd = document.querySelector(".modal-add-work .fa-xmark");
+
+const displayAddModal = () => {
+  btnAddModal.addEventListener("click", () => {
+    modalAddWork.style.display = "flex";
+    modalWrapper.style.display = "none";
   });
-}; ***********/
-// Erreur lors du delete
+  arrowLeft.addEventListener("click", () => {
+    modalAddWork.style.display = "none";
+    modalWrapper.style.display = "flex";
+  });
+  markAdd.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+};
+displayAddModal();
+
+/********** Previsualisation de l'image **************/
+const previewImg = document.querySelector(".container-file img");
+const inputFile = document.querySelector(".container-file input");
+const labelFile = document.querySelector(".container-file label");
+const iconeFile = document.querySelector(".container-file .fa-image");
+const pFile = document.querySelector(".container-file p");
+
+// changement input
+
+inputFile.addEventListener("change", () => {
+  const file = inputFile.files[0];
+  console.log(file);
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewImg.src = e.target.result;
+      previewImg.style.display = "flex";
+      labelFile.style.display = "none";
+      iconeFile.style.display = "none";
+      pFile.style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  }
+});

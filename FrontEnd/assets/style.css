@@ -385,38 +385,47 @@ nav a {
 
 .modal-wrapper {
   background-color: white;
-  width: 37%;
-  height: 70%;
+  width: 50%;
+  height: 80%;
   padding: 20px;
   overflow: auto;
-  border-radius: 5px;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
   position: relative;
 }
-.modal-wrapper h2 {
-  color: black;
-}
 .fa-xmark {
   position: absolute;
   top: 26px;
   right: 30px;
+  font-size: 24px;
   cursor: pointer;
+}
+
+.modal-wrapper h2 {
+  font-weight: 400;
+  font-size: 26px;
+  font-family: "Work Sans";
+  margin-top: 30px;
+  margin-bottom: 49px;
+  color: black;
 }
 
 /*********** Galery Modal  ***********/
 .galery-modal {
-  width: 100%;
+  width: 80%;
   height: 70%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  column-gap: 10px;
+  border-bottom: 1px solid #b3b3b3;
+  padding-bottom: 40px;
   figure {
-    width: 20%;
+    width: 18%;
     height: 30%;
     position: relative;
     padding-bottom: 20px;
@@ -438,6 +447,95 @@ nav a {
       .fa-trash-can {
         color: white;
         font-size: 0.7rem;
+      }
+    }
+  }
+}
+
+/******** Modal Ajout Photo *********/
+.modal-add-work {
+  background-color: white;
+  width: 50%;
+  height: 80%;
+  padding: 20px;
+  overflow: auto;
+  border-radius: 10px;
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+  h2 {
+    font-weight: 400;
+    font-size: 26px;
+    font-family: "Work Sans";
+    color: black;
+  }
+  .fa-arrow-left {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 80%;
+    width: 80%;
+    gap: 10px;
+    .container-file {
+      background-color: #e8f1f6;
+      height: 30%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 3px;
+      label {
+        background-color: #cbd6dc;
+        color: #306685;
+        display: flex;
+        border-radius: 50px;
+        padding: 5px 10px;
+        height: 36px;
+        width: 173px;
+        font-size: 16px;
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
+      }
+      input {
+        display: none;
+      }
+      .fa-image {
+        font-size: 4rem;
+        color: #b9c5cc;
+      }
+      img {
+        display: none;
+        max-width: 100%;
+        height: 100%;
+      }
+      p {
+        color: #444444;
+        padding-top: 5px;
+        size: 10px;
+      }
+    }
+    input[type="text"] {
+      border: none;
+      box-shadow: 0px 4px 14px 0px #00000017;
+    }
+    input[type="submit"] {
+      background-color: #a7a7a7;
+      padding: 5px 10px;
+      border-radius: 60px;
+      border: none;
+      cursor: pointer;
+      &:focus {
+        background-color: #1d6154;
+        color: white;
       }
     }
   }
