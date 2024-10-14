@@ -342,14 +342,12 @@ nav a {
   visibility: hidden;
 }
 .admin-modifier {
-  display: flex;
   font-family: "Work Sans";
   font-weight: 400;
   color: black;
-  align-content: center;
-  gap: 10px;
   font-size: 14px;
   cursor: pointer;
+  margin-left: 31px;
 }
 .mode-edition {
   display: flex;
@@ -385,8 +383,8 @@ nav a {
 
 .modal-wrapper {
   background-color: white;
-  width: 50%;
-  height: 80%;
+  width: 37%;
+  height: 65%;
   padding: 20px;
   overflow: auto;
   border-radius: 10px;
@@ -455,8 +453,8 @@ nav a {
 /******** Modal Ajout Photo *********/
 .modal-add-work {
   background-color: white;
-  width: 50%;
-  height: 80%;
+  width: 37%;
+  height: 65%;
   padding: 20px;
   overflow: auto;
   border-radius: 10px;
@@ -484,14 +482,16 @@ nav a {
     justify-content: center;
     height: 80%;
     width: 80%;
-    gap: 10px;
+    gap: 20px;
     .container-file {
       background-color: #e8f1f6;
-      height: 30%;
+      padding-top: 15px;
+      height: 40%;
       display: flex;
       flex-direction: column;
       align-items: center;
       border-radius: 3px;
+      margin-top: 0px;
       label {
         background-color: #cbd6dc;
         color: #306685;
@@ -509,7 +509,7 @@ nav a {
         display: none;
       }
       .fa-image {
-        font-size: 4rem;
+        font-size: 6rem;
         color: #b9c5cc;
       }
       img {
@@ -533,10 +533,6 @@ nav a {
       border-radius: 60px;
       border: none;
       cursor: pointer;
-      &:focus {
-        background-color: #1d6154;
-        color: white;
-      }
     }
   }
 }

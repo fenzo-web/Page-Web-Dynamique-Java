@@ -125,10 +125,24 @@ if (!loged) {
 }
 // fonction a appeler quand je me deconnect pour faire apparaitre les categories
 
+/**************************Test Function Initialisation 
+ 
+ const initialisation = async () => {
+  // TEST
+  const data = getWorks();
+  const parametres = 
+  return { data, parametres};
+}
+ const display = async (data, parametres) => {
+
+ }
+
+ * **********************/
+
 /*********************** Si utilisateur connecter *****************/
 let htmlModifier = `
 <i class="fa-regular fa-pen-to-square"></i>
-<p>modifier</p>
+<span>modifier</span>
 `;
 let htmlModeEdition = `
 <i class="fa-regular fa-pen-to-square"></i>
@@ -153,11 +167,11 @@ if (loged) {
     });
     // action de deconnection
   });
-  const modifier = document.createElement("div");
+  const modifier = document.createElement("span");
   modifier.innerHTML = htmlModifier;
   modifier.classList.add("admin-modifier");
-  filters.appendChild(modifier);
-  // Attention le modifier n'est pas a la bonne place
+  mesProjets.appendChild(modifier);
+  // Modifier
   const modeEdition = document.createElement("div");
   modeEdition.innerHTML = htmlModeEdition;
   modeEdition.classList.add("mode-edition");
@@ -226,7 +240,7 @@ const deleteWorkModal = (id) => {
         console.log("Problem");
         return;
       }
-      return response.json();
+      return response.json(); // consol montre une erreur syntaxx
     })
     .then((data) => {
       console.log("Sucess", data);
@@ -265,7 +279,7 @@ const labelFile = document.querySelector(".container-file label");
 const iconeFile = document.querySelector(".container-file .fa-image");
 const pFile = document.querySelector(".container-file p");
 
-// changement input
+// Ecouter les changements input
 
 inputFile.addEventListener("change", () => {
   const file = inputFile.files[0];
@@ -282,3 +296,55 @@ inputFile.addEventListener("change", () => {
     reader.readAsDataURL(file);
   }
 });
+
+// Liste Category dans input Select
+
+const displayCategoriesModal = async () => {
+  const select = document.querySelector(".modal-add-work select");
+  const categories = await getCategories();
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.textContent = category.name;
+    select.appendChild(option);
+  });
+};
+displayCategoriesModal();
+
+/********** Post Work ********/
+const form = document.querySelector(".modal-add-work form");
+const title = document.querySelector(".modal-add-work #title");
+const categoryModal = document.querySelector(".modal-add-work #category");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(form);
+  fetch("http://localhost:5678/api/works", {
+    method: "POST",
+    body: JSON.stringify(formData),
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      console.log("voici le work ajouté", data);
+      displayWorksModal();
+    });
+});
+
+// Verification de conformité
+const verifForm = async () => {
+  const buttonValidForm = document.querySelector(
+    `.modal-add-work  input[type="submit"]`
+  );
+  form.addEventListener("input", () => {
+    if (!title.value == "" && !category.value == "" && !inputFile.value == "") {
+      buttonValidForm.style.backgroundColor = "#1d6154";
+      buttonValidForm.disabled = false;
+    } else {
+      buttonValidForm.style.backgroundColor = "#a7a7a7";
+      buttonValidForm.disabled = true;
+    }
+  });
+};
+verifForm();
