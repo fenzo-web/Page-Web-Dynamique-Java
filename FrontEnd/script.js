@@ -13,6 +13,17 @@ const isConnect = () => {
   return !!token;
 };
 const loged = isConnect();
+let htmlModifier = `
+<i class="fa-regular fa-pen-to-square"></i>
+<span>modifier</span>
+`;
+let htmlModeEdition = `
+<i class="fa-regular fa-pen-to-square"></i>
+<p>Mode édition</p>
+`;
+const galeryModal = document.querySelector(".galery-modal");
+const modal = document.querySelector(".modal");
+const xmark = document.querySelector(".modal .fa-xmark");
 
 /****************************  Fetch Works  **************************/
 
@@ -37,10 +48,10 @@ const displayWorks = async () => {
     createWork(oneWork);
   });
 };
-displayWorks();
 
 const createWork = (oneWork) => {
   const figure = document.createElement("figure");
+  figure.dataset.id = oneWork.id;
   const img = document.createElement("img");
   img.src = oneWork.imageUrl;
   const figcaption = document.createElement("figcaption");
@@ -118,98 +129,80 @@ const filterCategory = async () => {
     });
   });
 };
-if (!loged) {
-  displayCategoriesButtons().then(() => {
-    filterCategory();
-  });
-}
-// fonction a appeler quand je me deconnect pour faire apparaitre les categories
 
-/**************************Test Function Initialisation 
- 
- const initialisation = async () => {
-  // TEST
-  const data = getWorks();
-  const parametres = 
-  return { data, parametres};
-}
- const display = async (data, parametres) => {
-
- }
-
- * **********************/
-
-/*********************** Si utilisateur connecter *****************/
-let htmlModifier = `
-<i class="fa-regular fa-pen-to-square"></i>
-<span>modifier</span>
-`;
-let htmlModeEdition = `
-<i class="fa-regular fa-pen-to-square"></i>
-<p>Mode édition</p>
-`;
-
-if (loged) {
-  logout.textContent = "logout";
-  logout.removeAttribute("href");
-  logout.addEventListener("click", () => {
-    sessionStorage.removeItem("token");
-    modeEdition.classList.add("display-none");
-    modifier.classList.add("display-none");
-    header.classList.remove("no-marge");
-    logout.innerHTML = `
-    <li>
-            <a href="log/login.html" class="logout">login</a>
-          </li>
-    `;
-    displayCategoriesButtons().then(() => {
-      filterCategory();
-    });
-    // action de deconnection
-  });
+/********* Si connecter *********/
+const modeEdition = document.querySelector(".mode-edition");
+// Fonction pour créer les éléments d'administration
+const createAdminElements = () => {
   const modifier = document.createElement("span");
   modifier.innerHTML = htmlModifier;
   modifier.classList.add("admin-modifier");
   mesProjets.appendChild(modifier);
-  // Modifier
+
+  modifier.addEventListener("click", async () => {
+    await displayWorksModal();
+    modal.style.display = "flex";
+  });
+
+  xmark.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
   const modeEdition = document.createElement("div");
   modeEdition.innerHTML = htmlModeEdition;
   modeEdition.classList.add("mode-edition");
   header.prepend(modeEdition);
   header.classList.add("no-marge");
-  // Mode Edition
-}
+};
 
-/***************** Modal **********************/
-const modifier = document.querySelector(".admin-modifier");
-const modal = document.querySelector(".modal");
-const xmark = document.querySelector(".modal .fa-xmark");
-const galeryModal = document.querySelector(".galery-modal");
+// Fonction pour configurer le logout    // att boutton logout non fonctionnel
+const configureLogout = () => {
+  const logoutLink = document.querySelector("header nav .logout");
+  logoutLink.textContent = "logout";
+  logoutLink.removeAttribute("href");
 
-modifier.addEventListener("click", () => {
-  displayWorksModal();
-  modal.style.display = "flex";
-});
+  logoutLink.addEventListener("click", (e) => {
+    e.preventDefault();
 
-xmark.addEventListener("click", () => {
-  modal.style.display = "none";
-});
-modal.addEventListener("click", (e) => {
-  if (e.target.className == "modal") {
-    modal.style.display = "none";
-  }
-});
-window.addEventListener("keydown", function (e) {
-  // close modal sur button Echap
-  if (e.key === "Escape" || e.key === "Esc") {
-    modal.style.display = "none";
-  }
-});
-// Affichage des Works dans la Modal
+    sessionStorage.removeItem("token");
+
+    const modeEdition = document.querySelector(".mode-edition");
+    const modifier = document.querySelector(".admin-modifier");
+
+    modeEdition.classList.add("display-none");
+    modifier.classList.add("display-none");
+    header.classList.remove("no-marge");
+
+    // Changer le contenu du bouton
+    logoutLink.innerHTML = `
+      <li>
+        <a href="#" class="login">login</a>
+      </li>
+    `;
+
+    // Réaffecter le nouvel élément pour le gestionnaire d'événements
+    const loginLink = document.querySelector("header nav .login");
+    loginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = "log/login.html"; // Redirection vers la page de connexion
+    });
+    displayCategoriesButtons().then(() => {
+      filterCategory();
+    });
+  });
+};
+/***********Affichage des Works dans la Modal*************/
 const displayWorksModal = async () => {
   galeryModal.innerHTML = "";
   allWorks.forEach((work) => {
     const figure = document.createElement("figure");
+    figure.dataset.id = work.id;
     const img = document.createElement("img");
     const span = document.createElement("span");
     const trash = document.createElement("i");
@@ -219,31 +212,47 @@ const displayWorksModal = async () => {
     img.src = work.imageUrl;
     trash.addEventListener("click", () => {
       deleteWorkModal(work.id);
-      figure.style.display = "none";
+      const worksToDelete = document.querySelectorAll(
+        `figure[data-id="${work.id}"]`
+      );
+      worksToDelete.forEach(
+        (workToDelete) => (workToDelete.style.display = "none")
+      );
+      const filteredAllWorks = allWorks.filter(
+        (itemWork) => itemWork.id !== work.id
+      );
+      console.log(
+        "🚀 ~ trash.addEventListener ~ filteredAllWorks:",
+        filteredAllWorks
+      );
+      allworks = filteredAllWorks;
     });
     span.appendChild(trash);
     figure.appendChild(span);
     figure.appendChild(img);
     galeryModal.appendChild(figure);
   });
+  return allWorks;
 };
 
-// Suppression d'une image dans la modal
+/*********Suppression d'une image dans la modal***********/
 
 const deleteWorkModal = (id) => {
   fetch(`http://localhost:5678/api/works/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   })
-    .then((response) => {
+    .then(async (response) => {
       if (!response.ok) {
         console.log("Problem");
         return;
       }
-      return response.json(); // consol montre une erreur syntaxx
+      console.log(response);
+      return response;
     })
     .then((data) => {
       console.log("Sucess", data);
+      return data;
     })
     .catch((error) => {
       console.log(error);
@@ -270,7 +279,6 @@ const displayAddModal = () => {
     modal.style.display = "none";
   });
 };
-displayAddModal();
 
 /********** Previsualisation de l'image **************/
 const previewImg = document.querySelector(".container-file img");
@@ -279,7 +287,7 @@ const labelFile = document.querySelector(".container-file label");
 const iconeFile = document.querySelector(".container-file .fa-image");
 const pFile = document.querySelector(".container-file p");
 
-// Ecouter les changements input
+/*****Ecouter les changements input*******/
 
 inputFile.addEventListener("change", () => {
   const file = inputFile.files[0];
@@ -297,19 +305,38 @@ inputFile.addEventListener("change", () => {
   }
 });
 
-// Liste Category dans input Select
+/********** Liste Category dans input Select *************/
 
 const displayCategoriesModal = async () => {
   const select = document.querySelector(".modal-add-work select");
-  const categories = await getCategories();
-  categories.forEach((category) => {
-    const option = document.createElement("option");
-    option.value = category.id;
-    option.textContent = category.name;
-    select.appendChild(option);
+
+  // Fonction pour charger les catégories
+  const loadCategories = async () => {
+    select.innerHTML = ""; // Vide les options existantes
+
+    try {
+      const categories = await getCategories();
+      const filteredCategories = categories.slice(1); // Exclure le premier élément
+
+      filteredCategories.forEach((category) => {
+        const option = document.createElement("option");
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des catégories :", error);
+    }
+  };
+
+  // Écoute l'événement "click" sur le select
+  select.addEventListener("click", () => {
+    if (select.children.length === 0) {
+      // Charge les catégories seulement si aucune option n'est présente
+      loadCategories();
+    }
   });
 };
-displayCategoriesModal();
 
 /********** Post Work ********/
 const form = document.querySelector(".modal-add-work form");
@@ -328,11 +355,12 @@ form.addEventListener("submit", async (e) => {
     .then((data) => {
       console.log(data);
       console.log("voici le work ajouté", data);
-      displayWorksModal();
+      // displayWorksModal();
+      // displayWorks();
     });
 });
 
-// Verification de conformité
+/********** Verification de conformité *************/
 const verifForm = async () => {
   const buttonValidForm = document.querySelector(
     `.modal-add-work  input[type="submit"]`
@@ -347,4 +375,38 @@ const verifForm = async () => {
     }
   });
 };
-verifForm();
+/**************************Function Initialisation **********************/
+
+const init = async () => {
+  // Récupérer les informations de connexion
+  const loged = isConnect();
+  //Recuperation des travaux
+  await getWorks;
+  // Afficher les travaux
+  await displayWorks();
+
+  // Afficher les boutons de catégories si l'utilisateur n'est pas connecté
+  if (!loged) {
+    await displayCategoriesButtons();
+    filterCategory();
+  }
+
+  // Configuration Connext
+  if (loged) {
+    configureLogout();
+    createAdminElements();
+  }
+
+  // Afficher les catégories dans le modal
+  await displayCategoriesModal();
+
+  // Afficher les événements de la modal d'ajout
+  displayAddModal();
+  await displayWorksModal();
+
+  // Vérifier la conformité du formulaire
+  await verifForm();
+};
+
+// Appeler la fonction init pour démarrer l'application
+init();
