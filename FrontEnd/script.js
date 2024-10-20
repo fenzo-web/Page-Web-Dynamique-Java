@@ -161,7 +161,7 @@ const createAdminElements = () => {
   header.classList.add("no-marge");
 };
 
-// Fonction pour configurer le logout    // att boutton logout non fonctionnel
+// Fonction pour configurer le logout
 const configureLogout = () => {
   const logoutLink = document.querySelector("header nav .logout");
   logoutLink.textContent = "logout";
@@ -232,7 +232,6 @@ const displayWorksModal = async () => {
     figure.appendChild(img);
     galeryModal.appendChild(figure);
   });
-  return allWorks;
 };
 
 /*********Suppression d'une image dans la modal***********/
@@ -247,6 +246,8 @@ const deleteWorkModal = (id) => {
         console.log("Problem");
         return;
       }
+      // Mettre à jour allWorks pour exclure le travail supprimé
+      allWorks = allWorks.filter((work) => work.id !== id);
       console.log(response);
       return response;
     })
@@ -291,8 +292,25 @@ const pFile = document.querySelector(".container-file p");
 
 inputFile.addEventListener("change", () => {
   const file = inputFile.files[0];
-  console.log(file);
+
   if (file) {
+    // Vérification du format de fichier
+    const validFormats = ["image/jpeg", "image/png"];
+    if (!validFormats.includes(file.type)) {
+      alert("Veuillez sélectionner une image au format JPG ou PNG.");
+      inputFile.value = ""; // Réinitialise le champ de fichier
+      return;
+    }
+
+    // Vérification de la taille de l'image (4 Mo = 4 * 1024 * 1024 octets)
+    const maxSize = 4 * 1024 * 1024; // 4 Mo
+    if (file.size > maxSize) {
+      alert("La taille de l'image ne doit pas dépasser 4 Mo.");
+      inputFile.value = ""; // Réinitialise le champ de fichier
+      return;
+    }
+
+    // Prévisualisation de l'image si tout est correct
     const reader = new FileReader();
     reader.onload = function (e) {
       previewImg.src = e.target.result;
@@ -340,8 +358,8 @@ const displayCategoriesModal = async () => {
 
 /********** Post Work ********/
 const form = document.querySelector(".modal-add-work form");
-const title = document.querySelector(".modal-add-work #title");
-const categoryModal = document.querySelector(".modal-add-work #category");
+const titleInput = document.querySelector(".modal-add-work #title");
+const categorySelect = document.querySelector(".modal-add-work #category");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -361,20 +379,34 @@ form.addEventListener("submit", async (e) => {
 });
 
 /********** Verification de conformité *************/
-const verifForm = async () => {
+const verifForm = () => {
   const buttonValidForm = document.querySelector(
-    `.modal-add-work  input[type="submit"]`
+    `.modal-add-work input[type="submit"]`
   );
-  form.addEventListener("input", () => {
-    if (!title.value == "" && !category.value == "" && !inputFile.value == "") {
+
+  const validateForm = () => {
+    const isTitleValid = titleInput.value.trim() !== ""; // Vérifie que le titre n'est pas vide
+    const isFileValid = inputFile.files.length > 0; // Vérifie qu'un fichier est sélectionné
+    const isCategoryValid = categorySelect.value !== ""; // Vérifie qu'une catégorie est sélectionnée
+
+    if (isTitleValid && isFileValid && isCategoryValid) {
       buttonValidForm.style.backgroundColor = "#1d6154";
       buttonValidForm.disabled = false;
     } else {
       buttonValidForm.style.backgroundColor = "#a7a7a7";
       buttonValidForm.disabled = true;
     }
-  });
+  };
+
+  // Ajoute des écouteurs d'événements pour les changements sur les champs
+  titleInput.addEventListener("input", validateForm);
+  inputFile.addEventListener("change", validateForm);
+  categorySelect.addEventListener("change", validateForm);
+
+  // Appel initial pour définir l'état du bouton au chargement
+  validateForm();
 };
+
 /**************************Function Initialisation **********************/
 
 const init = async () => {
