@@ -85,8 +85,6 @@ const getCategories = async () => {
 };
 
 const displayCategoriesButtons = async () => {
-  await getCategories();
-  //console.log(categories);
   categories.forEach((oneCategory) => {
     const btn = document.createElement("button");
     btn.textContent = oneCategory.name;
@@ -101,15 +99,44 @@ const displayCategoriesButtons = async () => {
   });
 };
 
+/********** Verification de conformité *************/
+const verifForm = () => {
+  const buttonValidForm = document.querySelector(
+    `.modal-add-work input[type="submit"]`
+  );
+
+  const isTitleValid = titleInput.value.trim() !== ""; // Vérifie que le titre n'est pas vide
+  console.log("🚀 ~ verifForm ~ isTitleValid:", isTitleValid);
+  const isFileValid = inputFile.files.length > 0; // Vérifie qu'un fichier est sélectionné
+  console.log("🚀 ~ verifForm ~ isFileValid:", isFileValid);
+  const isCategoryValid = categorySelect.value !== ""; // Vérifie qu'une catégorie est sélectionnée
+  console.log("🚀 ~ verifForm ~ isCategoryValid:", isCategoryValid);
+
+  if (isTitleValid && isFileValid && isCategoryValid) {
+    buttonValidForm.style.backgroundColor = "#1d6154";
+    buttonValidForm.disabled = false;
+  } else {
+    buttonValidForm.style.backgroundColor = "#a7a7a7";
+    buttonValidForm.disabled = true;
+  }
+};
+
 /************************* Filtrages des buttons par categories *********************/
 
 const filterCategory = async () => {
-  //const allWorks = await getWorks();
-  //console.log(allWorks);
   const buttons = document.querySelectorAll(".filters button");
-  //console.log(buttons);
+
+  // Ajout Categoires au boutton Tous au debut
+  if (buttons.length > 0) {
+    buttons[0].classList.add("categories-all");
+  }
+
   buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
+      // Ajout des couleurs au button au click
+      buttons.forEach((btn) => btn.classList.remove("categories-all"));
+      e.target.classList.add("categories-all");
+      // Gestion des ID
       const btnId = Number(e.target.id); /**Recuper l'ID au click **/
       console.log("🚀 ~ button.addEventListener ~ btnId:", btnId);
       gallery.innerHTML = ""; /** Supprime les photos au click **/
@@ -292,24 +319,33 @@ const pFile = document.querySelector(".container-file p");
 
 inputFile.addEventListener("change", () => {
   const file = inputFile.files[0];
+  const errorMessageContainer = document.getElementById("error-message");
+
+  errorMessageContainer.innerHTML = "";
 
   if (file) {
     // Vérification du format de fichier
     const validFormats = ["image/jpeg", "image/png"];
     if (!validFormats.includes(file.type)) {
-      alert("Veuillez sélectionner une image au format JPG ou PNG.");
+      const errorMessage = document.createElement("p");
+      errorMessage.textContent =
+        "Veullez Selectionner une image au format JPG ou PNG.";
+      errorMessage.style.color = "red";
+      errorMessageContainer.appendChild(errorMessage);
       inputFile.value = ""; // Réinitialise le champ de fichier
-      return;
     }
 
     // Vérification de la taille de l'image (4 Mo = 4 * 1024 * 1024 octets)
     const maxSize = 4 * 1024 * 1024; // 4 Mo
     if (file.size > maxSize) {
-      alert("La taille de l'image ne doit pas dépasser 4 Mo.");
+      const errorMessage = document.createElement("p");
+      errorMessage.textContent =
+        "La taille de l'image ne doit pas dépasser 4Mo.";
+      errorMessage.style.color = "red";
+      errorMessageContainer.appendChild(errorMessage);
       inputFile.value = ""; // Réinitialise le champ de fichier
-      return;
     }
-
+    // charger la preview que si elle est bonne
     // Prévisualisation de l'image si tout est correct
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -321,6 +357,7 @@ inputFile.addEventListener("change", () => {
     };
     reader.readAsDataURL(file);
   }
+  verifForm();
 });
 
 /********** Liste Category dans input Select *************/
@@ -333,7 +370,6 @@ const displayCategoriesModal = async () => {
     select.innerHTML = ""; // Vide les options existantes
 
     try {
-      const categories = await getCategories();
       const filteredCategories = categories.slice(1); // Exclure le premier élément
 
       filteredCategories.forEach((category) => {
@@ -359,53 +395,39 @@ const displayCategoriesModal = async () => {
 /********** Post Work ********/
 const form = document.querySelector(".modal-add-work form");
 const titleInput = document.querySelector(".modal-add-work #title");
+titleInput.addEventListener("input", verifForm);
 const categorySelect = document.querySelector(".modal-add-work #category");
+categorySelect.addEventListener("input", verifForm);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const formData = new FormData(form);
+  const formData = new FormData(form); // On garde FormData
+
+  // Envoi de la requête
   fetch("http://localhost:5678/api/works", {
     method: "POST",
-    body: JSON.stringify(formData),
-    headers: { Authorization: `Bearer ${token}` },
+    body: formData, // Utiliser FormData
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Erreur lors de l'ajout du work");
+      }
+      return response.json();
+    })
     .then((data) => {
+      allWorks.push(data); // Ajout du work a la liste allworks
       console.log(data);
-      console.log("voici le work ajouté", data);
-      // displayWorksModal();
-      // displayWorks();
+      console.log("Voici le work ajouté", data);
+      createWork(data); // Ajout le travail
+      displayWorksModal();
+    })
+    .catch((error) => {
+      console.error("Erreur:", error);
     });
 });
-
-/********** Verification de conformité *************/
-const verifForm = () => {
-  const buttonValidForm = document.querySelector(
-    `.modal-add-work input[type="submit"]`
-  );
-
-  const validateForm = () => {
-    const isTitleValid = titleInput.value.trim() !== ""; // Vérifie que le titre n'est pas vide
-    const isFileValid = inputFile.files.length > 0; // Vérifie qu'un fichier est sélectionné
-    const isCategoryValid = categorySelect.value !== ""; // Vérifie qu'une catégorie est sélectionnée
-
-    if (isTitleValid && isFileValid && isCategoryValid) {
-      buttonValidForm.style.backgroundColor = "#1d6154";
-      buttonValidForm.disabled = false;
-    } else {
-      buttonValidForm.style.backgroundColor = "#a7a7a7";
-      buttonValidForm.disabled = true;
-    }
-  };
-
-  // Ajoute des écouteurs d'événements pour les changements sur les champs
-  titleInput.addEventListener("input", validateForm);
-  inputFile.addEventListener("change", validateForm);
-  categorySelect.addEventListener("change", validateForm);
-
-  // Appel initial pour définir l'état du bouton au chargement
-  validateForm();
-};
 
 /**************************Function Initialisation **********************/
 
@@ -413,9 +435,13 @@ const init = async () => {
   // Récupérer les informations de connexion
   const loged = isConnect();
   //Recuperation des travaux
-  await getWorks;
-  // Afficher les travaux
-  await displayWorks();
+  const worksPromise = getWorks();
+  // Recuperation des Categories
+  const categoriesPromise = getCategories();
+  // Affichages Travaux
+  const displayPromise = displayWorks();
+  //Mise en Place  PROMISE ALL
+  await Promise.all([worksPromise, categoriesPromise, displayPromise]);
 
   // Afficher les boutons de catégories si l'utilisateur n'est pas connecté
   if (!loged) {
@@ -427,17 +453,13 @@ const init = async () => {
   if (loged) {
     configureLogout();
     createAdminElements();
+    // Afficher les catégories dans le modal
+    await displayCategoriesModal();
+
+    // Afficher les événements de la modal d'ajout
+    displayAddModal();
+    await displayWorksModal();
   }
-
-  // Afficher les catégories dans le modal
-  await displayCategoriesModal();
-
-  // Afficher les événements de la modal d'ajout
-  displayAddModal();
-  await displayWorksModal();
-
-  // Vérifier la conformité du formulaire
-  await verifForm();
 };
 
 // Appeler la fonction init pour démarrer l'application
