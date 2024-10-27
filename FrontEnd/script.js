@@ -41,27 +41,57 @@ async function getWorks() {
     console.log(error);
   }
 }
+
+/***************** Fonction pour créer un élément ******************/
+const createWorkElement = (work, isModal = false) => {
+  const figure = document.createElement("figure");
+  figure.dataset.id = work.id;
+
+  const img = document.createElement("img");
+  img.src = work.imageUrl;
+
+  figure.appendChild(img);
+
+  if (!isModal) {
+    // Ajouter le titre seulement si ce n'est pas dans la modal
+    const figcaption = document.createElement("figcaption");
+    figcaption.textContent = work.title;
+    figure.appendChild(figcaption);
+  } else {
+    const span = document.createElement("span");
+    const trash = document.createElement("i");
+    trash.classList.add("fa-solid", "fa-trash-can");
+    trash.id = work.id;
+    trash.dataset.toto = work.id;
+
+    trash.addEventListener("click", () => {
+      deleteWorkModal(work.id);
+      const worksToDelete = document.querySelectorAll(
+        `figure[data-id="${work.id}"]`
+      );
+      worksToDelete.forEach((workToDelete) => {
+        workToDelete.style.display = "none";
+      });
+      allWorks = allWorks.filter((itemWork) => itemWork.id !== work.id);
+      console.log("🚀 ~ trash.addEventListener ~ updated allWorks:", allWorks);
+    });
+
+    span.appendChild(trash);
+    figure.appendChild(span);
+  }
+
+  return figure;
+};
 /****************************** Display Works  *****************************/
+
+// Fonction pour afficher les œuvres dans la galerie principale
 const displayWorks = async () => {
   await getWorks();
   allWorks.forEach((oneWork) => {
-    createWork(oneWork);
+    const workElement = createWorkElement(oneWork); // false par défaut
+    gallery.appendChild(workElement);
   });
 };
-
-const createWork = (oneWork) => {
-  const figure = document.createElement("figure");
-  figure.dataset.id = oneWork.id;
-  const img = document.createElement("img");
-  img.src = oneWork.imageUrl;
-  const figcaption = document.createElement("figcaption");
-  figcaption.textContent = oneWork.title;
-  figure.appendChild(img);
-  figure.appendChild(figcaption);
-  gallery.appendChild(figure);
-};
-
-/************************    Display Button Categories     ************************/
 
 /************************* Fetch Categories ************************/
 
@@ -85,6 +115,8 @@ const getCategories = async () => {
 };
 
 const displayCategoriesButtons = async () => {
+  // Vider les boutons existants avant de les ajouter
+  filters.innerHTML = "";
   categories.forEach((oneCategory) => {
     const btn = document.createElement("button");
     btn.textContent = oneCategory.name;
@@ -93,8 +125,6 @@ const displayCategoriesButtons = async () => {
     if (loged == "true") {
       btn.classList.add("hidden");
     }
-    // Tentative pour changer juste le TOUS
-
     filters.appendChild(btn);
   });
 };
@@ -126,7 +156,7 @@ const verifForm = () => {
 const filterCategory = async () => {
   const buttons = document.querySelectorAll(".filters button");
 
-  // Ajout Categoires au boutton Tous au debut
+  // Ajout categories-all au boutton Tous au debut
   if (buttons.length > 0) {
     buttons[0].classList.add("categories-all");
   }
@@ -140,18 +170,17 @@ const filterCategory = async () => {
       const btnId = Number(e.target.id); /**Recuper l'ID au click **/
       console.log("🚀 ~ button.addEventListener ~ btnId:", btnId);
       gallery.innerHTML = ""; /** Supprime les photos au click **/
-      if (btnId !== 0) {
-        const filteredWorks = allWorks.filter(
-          (oneWork) => oneWork.categoryId === btnId
-        );
-        filteredWorks.forEach((oneWork) => {
-          createWork(oneWork);
-        });
-      } else {
-        allWorks.forEach((oneWork) => {
-          createWork(oneWork);
-        });
-      }
+      // Filtrage des œuvres
+      const filteredWorks =
+        btnId !== 0
+          ? allWorks.filter((oneWork) => oneWork.categoryId === btnId)
+          : allWorks;
+
+      // Affichage des œuvres filtrées
+      filteredWorks.forEach((oneWork) => {
+        const workElement = createWorkElement(oneWork); // Crée l'élément
+        gallery.appendChild(workElement); // Ajoute à la galerie
+      });
       console.log(btnId);
     });
   });
@@ -194,7 +223,7 @@ const configureLogout = () => {
   logoutLink.textContent = "logout";
   logoutLink.removeAttribute("href");
 
-  logoutLink.addEventListener("click", (e) => {
+  logoutLink.addEventListener("click", async (e) => {
     e.preventDefault();
 
     sessionStorage.removeItem("token");
@@ -213,51 +242,27 @@ const configureLogout = () => {
       </li>
     `;
 
-    // Réaffecter le nouvel élément pour le gestionnaire d'événements
+    // Afficher les catégories
+    await displayCategoriesButtons();
+    filterCategory();
+
+    // Réaffecter le nouvel élément pour le gestionnaire d'événements sur le lien de connexion
     const loginLink = document.querySelector("header nav .login");
     loginLink.addEventListener("click", (e) => {
       e.preventDefault();
       window.location.href = "log/login.html"; // Redirection vers la page de connexion
     });
-    displayCategoriesButtons().then(() => {
-      filterCategory();
-    });
   });
 };
 /***********Affichage des Works dans la Modal*************/
+
+// Fonction pour afficher les œuvres dans la modal
 const displayWorksModal = async () => {
   galeryModal.innerHTML = "";
+  await getWorks();
   allWorks.forEach((work) => {
-    const figure = document.createElement("figure");
-    figure.dataset.id = work.id;
-    const img = document.createElement("img");
-    const span = document.createElement("span");
-    const trash = document.createElement("i");
-    trash.classList.add("fa-solid", "fa-trash-can");
-    trash.id = work.id;
-    trash.dataset.toto = work.id;
-    img.src = work.imageUrl;
-    trash.addEventListener("click", () => {
-      deleteWorkModal(work.id);
-      const worksToDelete = document.querySelectorAll(
-        `figure[data-id="${work.id}"]`
-      );
-      worksToDelete.forEach(
-        (workToDelete) => (workToDelete.style.display = "none")
-      );
-      const filteredAllWorks = allWorks.filter(
-        (itemWork) => itemWork.id !== work.id
-      );
-      console.log(
-        "🚀 ~ trash.addEventListener ~ filteredAllWorks:",
-        filteredAllWorks
-      );
-      allworks = filteredAllWorks;
-    });
-    span.appendChild(trash);
-    figure.appendChild(span);
-    figure.appendChild(img);
-    galeryModal.appendChild(figure);
+    const workElement = createWorkElement(work, true); // true pour la modal
+    galeryModal.appendChild(workElement);
   });
 };
 
@@ -322,6 +327,7 @@ inputFile.addEventListener("change", () => {
   const errorMessageContainer = document.getElementById("error-message");
 
   errorMessageContainer.innerHTML = "";
+  let isValid = true; // Variable pour suivre la validité du fichier
 
   if (file) {
     // Vérification du format de fichier
@@ -333,6 +339,7 @@ inputFile.addEventListener("change", () => {
       errorMessage.style.color = "red";
       errorMessageContainer.appendChild(errorMessage);
       inputFile.value = ""; // Réinitialise le champ de fichier
+      isValid = false; // Marquer comme Invalide
     }
 
     // Vérification de la taille de l'image (4 Mo = 4 * 1024 * 1024 octets)
@@ -344,18 +351,20 @@ inputFile.addEventListener("change", () => {
       errorMessage.style.color = "red";
       errorMessageContainer.appendChild(errorMessage);
       inputFile.value = ""; // Réinitialise le champ de fichier
+      isValid = false; // Marquer comme
     }
-    // charger la preview que si elle est bonne
     // Prévisualisation de l'image si tout est correct
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      previewImg.src = e.target.result;
-      previewImg.style.display = "flex";
-      labelFile.style.display = "none";
-      iconeFile.style.display = "none";
-      pFile.style.display = "none";
-    };
-    reader.readAsDataURL(file);
+    if (isValid) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        previewImg.src = e.target.result; // Met à jour la source de l'image
+        previewImg.style.display = "flex"; // Affiche la prévisualisation
+        labelFile.style.display = "none"; // Cache le label
+        iconeFile.style.display = "none"; // Cache l'icône
+        pFile.style.display = "none"; // Cache le texte d'instruction
+      };
+      reader.readAsDataURL(file);
+    }
   }
   verifForm();
 });
@@ -401,12 +410,12 @@ categorySelect.addEventListener("input", verifForm);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const formData = new FormData(form); // On garde FormData
+  const formData = new FormData(form); // FormData
 
   // Envoi de la requête
   fetch("http://localhost:5678/api/works", {
     method: "POST",
-    body: formData, // Utiliser FormData
+    body: formData,
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -418,11 +427,13 @@ form.addEventListener("submit", async (e) => {
       return response.json();
     })
     .then((data) => {
-      allWorks.push(data); // Ajout du work a la liste allworks
-      console.log(data);
+      allWorks.push(data); // Ajout du work à la liste allWorks
+
+      // Créer et ajouter le nouvel élément à la galerie
+      const newWorkElement = createWorkElement(data, false); // false pour ajouter le titre
+      gallery.appendChild(newWorkElement); // Ajoute le nouvel élément à la galerie
+
       console.log("Voici le work ajouté", data);
-      createWork(data); // Ajout le travail
-      displayWorksModal();
     })
     .catch((error) => {
       console.error("Erreur:", error);
@@ -443,6 +454,8 @@ const init = async () => {
   //Mise en Place  PROMISE ALL
   await Promise.all([worksPromise, categoriesPromise, displayPromise]);
 
+  console.log("All works:", allWorks);
+
   // Afficher les boutons de catégories si l'utilisateur n'est pas connecté
   if (!loged) {
     await displayCategoriesButtons();
@@ -462,5 +475,5 @@ const init = async () => {
   }
 };
 
-// Appeler la fonction init pour démarrer l'application
+// Appeler la fonction init pour démarrer
 init();
