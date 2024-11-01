@@ -21,9 +21,27 @@ let htmlModeEdition = `
 <i class="fa-regular fa-pen-to-square"></i>
 <p>Mode édition</p>
 `;
+/******** Modal *********/
 const galeryModal = document.querySelector(".galery-modal");
 const modal = document.querySelector(".modal");
 const xmark = document.querySelector(".modal .fa-xmark");
+const form = document.querySelector(".modal-add-work form");
+const btnAddModal = document.querySelector(".modal-wrapper .button");
+const modalAddWork = document.querySelector(".modal-add-work");
+const modalWrapper = document.querySelector(".modal-wrapper");
+const arrowLeft = document.querySelector(".fa-arrow-left");
+const markAdd = document.querySelector(".modal-add-work .fa-xmark");
+/****** Admin ****/
+const modeEdition = document.querySelector(".mode-edition");
+/********** Previsualisation de l'image **************/
+const previewImg = document.querySelector(".container-file img");
+const inputFile = document.querySelector(".container-file input");
+const labelFile = document.querySelector(".container-file label");
+const iconeFile = document.querySelector(".container-file .fa-image");
+const pFile = document.querySelector(".container-file p");
+/******* Ecoute des inputes */
+const titleInput = document.querySelector(".modal-add-work #title");
+const categorySelect = document.querySelector(".modal-add-work #category");
 
 /****************************  Fetch Works  **************************/
 
@@ -62,7 +80,6 @@ const createWorkElement = (work, isModal = false) => {
     const trash = document.createElement("i");
     trash.classList.add("fa-solid", "fa-trash-can");
     trash.id = work.id;
-    trash.dataset.toto = work.id;
 
     trash.addEventListener("click", () => {
       deleteWorkModal(work.id);
@@ -86,7 +103,6 @@ const createWorkElement = (work, isModal = false) => {
 
 // Fonction pour afficher les œuvres dans la galerie principale
 const displayWorks = async () => {
-  await getWorks();
   allWorks.forEach((oneWork) => {
     const workElement = createWorkElement(oneWork); // false par défaut
     gallery.appendChild(workElement);
@@ -168,7 +184,6 @@ const filterCategory = async () => {
       e.target.classList.add("categories-all");
       // Gestion des ID
       const btnId = Number(e.target.id); /**Recuper l'ID au click **/
-      console.log("🚀 ~ button.addEventListener ~ btnId:", btnId);
       gallery.innerHTML = ""; /** Supprime les photos au click **/
       // Filtrage des œuvres
       const filteredWorks =
@@ -186,8 +201,19 @@ const filterCategory = async () => {
   });
 };
 
-/********* Si connecter *********/
-const modeEdition = document.querySelector(".mode-edition");
+/********* Ouverture et fermeture Modal *********/
+const closeModal = () => {
+  modal.style.display = "none";
+  form.reset();
+};
+const openModal = () => {
+  modal.style.display = "flex";
+  modalAddWork.style.display = "none";
+  modalWrapper.style.display = "flex";
+};
+
+/******* Mode Admin*****/
+
 // Fonction pour créer les éléments d'administration
 const createAdminElements = () => {
   const modifier = document.createElement("span");
@@ -197,16 +223,14 @@ const createAdminElements = () => {
 
   modifier.addEventListener("click", async () => {
     await displayWorksModal();
-    modal.style.display = "flex";
+    openModal();
   });
 
-  xmark.addEventListener("click", () => {
-    modal.style.display = "none";
-  });
+  xmark.addEventListener("click", () => closeModal());
 
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      modal.style.display = "none";
+      closeModal();
     }
   });
 
@@ -259,7 +283,6 @@ const configureLogout = () => {
 // Fonction pour afficher les œuvres dans la modal
 const displayWorksModal = async () => {
   galeryModal.innerHTML = "";
-  await getWorks();
   allWorks.forEach((work) => {
     const workElement = createWorkElement(work, true); // true pour la modal
     galeryModal.appendChild(workElement);
@@ -293,11 +316,6 @@ const deleteWorkModal = (id) => {
 };
 
 /************** Faire le switch des modales ***************/
-const btnAddModal = document.querySelector(".modal-wrapper .button");
-const modalAddWork = document.querySelector(".modal-add-work");
-const modalWrapper = document.querySelector(".modal-wrapper");
-const arrowLeft = document.querySelector(".fa-arrow-left");
-const markAdd = document.querySelector(".modal-add-work .fa-xmark");
 
 const displayAddModal = () => {
   btnAddModal.addEventListener("click", () => {
@@ -308,17 +326,10 @@ const displayAddModal = () => {
     modalAddWork.style.display = "none";
     modalWrapper.style.display = "flex";
   });
-  markAdd.addEventListener("click", () => {
-    modal.style.display = "none";
-  });
+  markAdd.addEventListener("click", () => closeModal());
 };
 
 /********** Previsualisation de l'image **************/
-const previewImg = document.querySelector(".container-file img");
-const inputFile = document.querySelector(".container-file input");
-const labelFile = document.querySelector(".container-file label");
-const iconeFile = document.querySelector(".container-file .fa-image");
-const pFile = document.querySelector(".container-file p");
 
 /*****Ecouter les changements input*******/
 
@@ -402,10 +413,8 @@ const displayCategoriesModal = async () => {
 };
 
 /********** Post Work ********/
-const form = document.querySelector(".modal-add-work form");
-const titleInput = document.querySelector(".modal-add-work #title");
+
 titleInput.addEventListener("input", verifForm);
-const categorySelect = document.querySelector(".modal-add-work #category");
 categorySelect.addEventListener("input", verifForm);
 
 form.addEventListener("submit", async (e) => {
@@ -432,11 +441,12 @@ form.addEventListener("submit", async (e) => {
       // Créer et ajouter le nouvel élément à la galerie
       const newWorkElement = createWorkElement(data, false); // false pour ajouter le titre
       gallery.appendChild(newWorkElement); // Ajoute le nouvel élément à la galerie
-
       console.log("Voici le work ajouté", data);
+      //Fermuture de la modal
+      closeModal();
     })
     .catch((error) => {
-      console.error("Erreur:", error);
+      console.error("Erreur: Erreur dans les données Envoyer", error);
     });
 });
 
@@ -449,12 +459,17 @@ const init = async () => {
   const worksPromise = getWorks();
   // Recuperation des Categories
   const categoriesPromise = getCategories();
-  // Affichages Travaux
-  const displayPromise = displayWorks();
   //Mise en Place  PROMISE ALL
-  await Promise.all([worksPromise, categoriesPromise, displayPromise]);
-
-  console.log("All works:", allWorks);
+  await Promise.all([worksPromise, categoriesPromise])
+    .then(() => {
+      // Affichages Travaux
+      displayWorks();
+      console.log("works", allWorks);
+      console.log("categories", categories);
+    })
+    .catch((error) => {
+      console.error("Error", error);
+    });
 
   // Afficher les boutons de catégories si l'utilisateur n'est pas connecté
   if (!loged) {

@@ -6,9 +6,9 @@ let htmlLoginForm = `
     <h2>Log in</h2>
     <form id="loginForm" action="submit" method="post">
         <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" value="sophie.bluel@test.tld" required/>
+        <input type="email" id="email" name="email" value="" required/>
         <label for="password">Mot de passe</label>
-        <input type="password" id="password" name="password" value="S0phie" required/>
+        <input type="password" id="password" name="password" value="" required/>
         <input type="submit" value="Se connecter" />
         <p class="underline">Mot de passe oublié</p>
     </form>
